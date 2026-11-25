@@ -1,0 +1,24 @@
+name: Build Kiln One VST3
+on:
+  push:
+    paths: ['kiln-one-vst/**', '.github/workflows/kiln-one-vst.yml']
+  workflow_dispatch:
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: kiln-one-vst
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release ${{ matrix.os == 'macos-latest' && '-DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"' || '' }}
+      - name: Build
+        run: cmake --build build --config Release --target KilnOne_VST3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: KilnOne-VST3-${{ matrix.os }}
+          path: kiln-one-vst/build/KilnOne_artefacts/Release/VST3/
